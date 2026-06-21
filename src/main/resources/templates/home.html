@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>TradeGuard AI - Home</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0a0e1a, #0d1528, #111827);
+            color: #ffffff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* ===== HERO SECTION ===== */
+        .hero {
+            text-align: center;
+            padding: 100px 20px 60px;
+            position: relative;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(ellipse at center, rgba(0,255,204,0.03) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .hero-badge {
+            display: inline-block;
+            background: rgba(0, 255, 204, 0.08);
+            border: 1px solid rgba(0, 255, 204, 0.25);
+            color: #00ffcc;
+            padding: 8px 24px;
+            border-radius: 50px;
+            font-size: 13px;
+            letter-spacing: 0.5px;
+            margin-bottom: 30px;
+            animation: pulse 2s infinite;
+            font-weight: 500;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(0, 255, 204, 0.2);
+            }
+            70% {
+                box-shadow: 0 0 0 15px rgba(0, 255, 204, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(0, 255, 204, 0);
+            }
+        }
+
+        .hero h1 {
+            font-size: clamp(36px, 6vw, 64px);
+            font-weight: 800;
+            line-height: 1.15;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero h1 span {
+            background: linear-gradient(135deg, #00ffcc, #00bfff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            font-size: clamp(16px, 1.2vw, 20px);
+            color: #9ca3af;
+            max-width: 600px;
+            margin: 0 auto 40px;
+            line-height: 1.8;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+            position: relative;
+            z-index: 1;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #00ffcc, #00bfff);
+            color: #070b14;
+            padding: 16px 48px;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 700;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            display: inline-block;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 0 40px rgba(0, 255, 204, 0.3);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #ffffff;
+            padding: 16px 48px;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+
+        .btn-secondary:hover {
+            border-color: #00ffcc;
+            color: #00ffcc;
+            background: rgba(0, 255, 204, 0.05);
+        }
+
+        /* ===== TICKER ===== */
+        .ticker {
+            background: rgba(0, 255, 204, 0.03);
+            border-top: 1px solid rgba(0, 255, 204, 0.06);
+            border-bottom: 1px solid rgba(0, 255, 204, 0.06);
+            padding: 16px 20px;
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            flex-wrap: wrap;
+            font-size: 14px;
+            color: #9ca3af;
+            margin: 20px 0 40px;
+        }
+
+        .ticker span {
+            color: #00ff88;
+            font-weight: 600;
+        }
+
+        /* ===== CHAT BOT ===== */
+        .bot-section {
+            max-width: 720px;
+            margin: 0 auto 60px;
+            padding: 0 20px;
+        }
+
+        .bot-section h2 {
+            text-align: center;
+            font-size: clamp(26px, 3vw, 34px);
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        .bot-section>p {
+            text-align: center;
+            color: #9ca3af;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+
+        .chat-box {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(0, 255, 204, 0.12);
+            border-radius: 20px;
+            padding: 24px;
+            min-height: 320px;
+            max-height: 420px;
+            overflow-y: auto;
+            margin-bottom: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .chat-box::-webkit-scrollbar {
+            width: 4px;
+        }
+        .chat-box::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .chat-box::-webkit-scrollbar-thumb {
+            background: rgba(0, 255, 204, 0.3);
+            border-radius: 4px;
+        }
+
+        .msg-bot {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .bot-avatar {
+            width: 38px;
+            height: 38px;
+            background: linear-gradient(135deg, #00ffcc, #00bfff);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .bot-bubble {
+            background: rgba(0, 255, 204, 0.06);
+            border: 1px solid rgba(0, 255, 204, 0.1);
+            border-radius: 0 16px 16px 16px;
+            padding: 12px 18px;
+            color: #e5e7eb;
+            font-size: 14px;
+            line-height: 1.6;
+            max-width: 80%;
+        }
+
+        .msg-user {
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .user-bubble {
+            background: linear-gradient(135deg, rgba(0, 255, 204, 0.15), rgba(0, 191, 255, 0.15));
+            border: 1px solid rgba(0, 255, 204, 0.2);
+            border-radius: 16px 0 16px 16px;
+            padding: 12px 18px;
+            color: #ffffff;
+            font-size: 14px;
+            max-width: 70%;
+        }
+
+        .quick-replies {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 6px;
+        }
+
+        .qr-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(0, 255, 204, 0.25);
+            color: #00ffcc;
+            padding: 8px 18px;
+            border-radius: 30px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .qr-btn:hover {
+            background: rgba(0, 255, 204, 0.12);
+        }
+
+        .chat-input-row {
+            display: flex;
+            gap: 12px;
+        }
+
+        .chat-input {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 30px;
+            padding: 14px 22px;
+            color: #ffffff;
+            font-size: 14px;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        .chat-input:focus {
+            border-color: #00ffcc;
+            box-shadow: 0 0 20px rgba(0, 255, 204, 0.05);
+        }
+
+        .chat-input::placeholder {
+            color: #6b7280;
+        }
+
+        .send-btn {
+            background: linear-gradient(135deg, #00ffcc, #00bfff);
+            color: #070b14;
+            border: none;
+            border-radius: 30px;
+            padding: 14px 28px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .send-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 4px;
+            padding: 12px 18px;
+            background: rgba(0, 255, 204, 0.06);
+            border-radius: 0 16px 16px 16px;
+            border: 1px solid rgba(0, 255, 204, 0.1);
+        }
+
+        .typing-dots span {
+            width: 8px;
+            height: 8px;
+            background: #00ffcc;
+            border-radius: 50%;
+            animation: bounce 1.2s infinite;
+        }
+
+        .typing-dots span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        .typing-dots span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes bounce {
+            0%,
+            60%,
+            100% {
+                transform: translateY(0);
+            }
+            30% {
+                transform: translateY(-6px);
+            }
+        }
+
+        /* ===== FEATURES ===== */
+        .features {
+            padding: 60px 20px;
+            text-align: center;
+        }
+
+        .features h2 {
+            font-size: clamp(30px, 3.5vw, 42px);
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .features>p {
+            color: #9ca3af;
+            margin-bottom: 50px;
+            font-size: 16px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 24px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 20px;
+            padding: 32px 24px;
+            text-align: left;
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover {
+            border-color: rgba(0, 255, 204, 0.25);
+            transform: translateY(-6px);
+            box-shadow: 0 0 40px rgba(0, 255, 204, 0.05);
+        }
+
+        .feature-icon {
+            font-size: 36px;
+            margin-bottom: 12px;
+        }
+
+        .feature-card h3 {
+            font-size: 18px;
+            margin-bottom: 8px;
+            color: #00ffcc;
+        }
+
+        .feature-card p {
+            color: #9ca3af;
+            font-size: 14px;
+            line-height: 1.7;
+        }
+
+        /* ===== PRICING ===== */
+        .pricing {
+            padding: 60px 20px;
+            text-align: center;
+        }
+
+        .pricing h2 {
+            font-size: clamp(30px, 3.5vw, 42px);
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .pricing>p {
+            color: #9ca3af;
+            margin-bottom: 50px;
+            font-size: 16px;
+        }
+
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .price-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 24px;
+            padding: 40px 30px;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .price-card:hover {
+            transform: translateY(-6px);
+        }
+
+        .price-card.popular {
+            border-color: rgba(0, 255, 204, 0.3);
+            box-shadow: 0 0 50px rgba(0, 255, 204, 0.05);
+        }
+
+        .popular-badge {
+            position: absolute;
+            top: -14px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #00ffcc, #00bfff);
+            color: #070b14;
+            padding: 4px 20px;
+            border-radius: 50px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .plan-name {
+            font-size: 20px;
+            font-weight: 600;
+            color: #9ca3af;
+            margin-bottom: 10px;
+        }
+
+        .plan-price {
+            font-size: 48px;
+            font-weight: 800;
+            color: #ffffff;
+            margin-bottom: 4px;
+        }
+
+        .plan-price span {
+            font-size: 18px;
+            color: #9ca3af;
+            font-weight: 400;
+        }
+
+        .plan-balance {
+            color: #00ffcc;
+            font-size: 14px;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .plan-features {
+            text-align: left;
+            margin-bottom: 25px;
+            list-style: none;
+            padding: 0;
+        }
+
+        .plan-features li {
+            color: #9ca3af;
+            font-size: 14px;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .plan-features li::before {
+            content: "✓ ";
+            color: #00ff88;
+            font-weight: 700;
+        }
+
+        .plan-btn {
+            width: 100%;
+            padding: 14px;
+            border-radius: 50px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            border: none;
+            transition: 0.3s;
+            text-decoration: none;
+            display: block;
+            text-align: center;
+        }
+
+        .plan-btn-free {
+            background: rgba(255, 255, 255, 0.06);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .plan-btn-free:hover {
+            border-color: #00ffcc;
+            color: #00ffcc;
+        }
+
+        .plan-btn-pro {
+            background: linear-gradient(135deg, #00ffcc, #00bfff);
+            color: #070b14;
+        }
+
+        .plan-btn-pro:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 30px rgba(0, 255, 204, 0.2);
+        }
+
+        /* ===== CTA ===== */
+        .cta {
+            text-align: center;
+            padding: 80px 20px;
+            background: rgba(0, 255, 204, 0.02);
+            border-top: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .cta h2 {
+            font-size: clamp(30px, 3.5vw, 44px);
+            margin-bottom: 16px;
+            font-weight: 700;
+        }
+
+        .cta p {
+            color: #9ca3af;
+            margin-bottom: 35px;
+            font-size: 18px;
+        }
+
+        /* ===== FOOTER ===== */
+        .footer {
+            text-align: center;
+            padding: 25px;
+            color: #4b5563;
+            font-size: 13px;
+            border-top: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        /* ===== RESPONSIVE ===== */
+
+        /* Tablets */
+        @media (max-width: 992px) {
+            .hero {
+                padding: 60px 20px 40px;
+            }
+
+            .features-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .pricing-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        /* Mobile */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 32px;
+            }
+
+            .hero p {
+                font-size: 15px;
+                padding: 0 10px;
+            }
+
+            .hero-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .btn-primary,
+            .btn-secondary {
+                width: 100%;
+                max-width: 280px;
+                text-align: center;
+                padding: 14px 30px;
+                font-size: 15px;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+                padding: 0 10px;
+            }
+
+            .pricing-grid {
+                grid-template-columns: 1fr;
+                padding: 0 10px;
+            }
+
+            .price-card {
+                padding: 30px 20px;
+            }
+
+            .plan-price {
+                font-size: 36px;
+            }
+
+            .ticker {
+                gap: 16px;
+                font-size: 12px;
+                padding: 12px 16px;
+            }
+
+            .bot-section {
+                padding: 0 12px;
+            }
+
+            .chat-box {
+                min-height: 240px;
+                max-height: 320px;
+                padding: 16px;
+            }
+
+            .chat-input-row {
+                flex-direction: column;
+            }
+
+            .send-btn {
+                width: 100%;
+                padding: 12px;
+            }
+
+            .feature-card {
+                padding: 24px 18px;
+            }
+
+            .cta h2 {
+                font-size: 28px;
+            }
+
+            .cta p {
+                font-size: 15px;
+            }
+        }
+
+        /* Small Mobile */
+        @media (max-width: 480px) {
+            .hero h1 {
+                font-size: 26px;
+            }
+
+            .hero-badge {
+                font-size: 11px;
+                padding: 6px 16px;
+            }
+
+            .btn-primary,
+            .btn-secondary {
+                font-size: 14px;
+                padding: 12px 24px;
+                max-width: 100%;
+            }
+
+            .plan-price {
+                font-size: 30px;
+            }
+
+            .plan-name {
+                font-size: 17px;
+            }
+
+            .plan-features li {
+                font-size: 13px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- NAVBAR -->
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+    <!-- HERO -->
+    <div class="hero">
+        <div class="hero-badge">⚡ Powered by Bitget API + Real RSI/EMA Signals</div>
+        <h1>Trade Smarter<br>with <span>AI Signals</span></h1>
+        <p>Real-time BTC analysis using adaptive trend detection and mean reversion strategy. Built for serious traders.</p>
+        <div class="hero-buttons">
+            <a href="/register" class="btn-primary">🚀 Get Started Free</a>
+            <a href="/dashboard" class="btn-secondary">👀 View Demo</a>
+        </div>
+    </div>
+
+    <!-- TICKER -->
+    <div class="ticker">
+        <div>BTC/USDT &nbsp; <span id="btc-price">Loading...</span></div>
+        <div>Exchange &nbsp; <span>Bitget</span></div>
+        <div>Strategy &nbsp; <span>EMA + RSI</span></div>
+        <div>Mode &nbsp; <span>Paper Trading</span></div>
+        <div>Status &nbsp; <span>● LIVE</span></div>
+    </div>
+
+    <!-- AI BOT -->
+    <div class="bot-section">
+        <h2>🤖 Meet Your AI Trading Assistant</h2>
+        <p>Let our AI guide you to the perfect trading plan</p>
+        <div class="chat-box" id="chatBox"></div>
+        <div class="chat-input-row">
+            <input type="text" class="chat-input" id="userInput" placeholder="Type your message..." onkeydown="if(event.key==='Enter') sendMessage()" />
+            <button class="send-btn" onclick="sendMessage()">➤</button>
+        </div>
+    </div>
+
+    <!-- FEATURES -->
+    <div class="features">
+        <h2>Why TradeGuard AI?</h2>
+        <p>Everything a trader needs, powered by real market data</p>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">📡</div>
+                <h3>Live BTC Price</h3>
+                <p>Real-time price feed directly from Bitget API. Always accurate, always live.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🧠</div>
+                <h3>AI Signal Engine</h3>
+                <p>EMA + RSI based adaptive strategy generates BUY, SELL, HOLD signals automatically.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📊</div>
+                <h3>Live TradingView Chart</h3>
+                <p>Premium chart with 15-minute intervals, dark theme, powered by TradingView.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">💹</div>
+                <h3>Paper Trading</h3>
+                <p>Practice with virtual balance. Execute trades, track PnL, zero real risk.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📋</div>
+                <h3>Trade History</h3>
+                <p>Full log of every signal and trade. Verifiable, transparent, detailed.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🛡️</div>
+                <h3>Risk Management</h3>
+                <p>Confidence score and risk level calculated for every signal. Trade safe.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- PRICING -->
+    <div class="pricing">
+        <h2>Simple Pricing 💎</h2>
+        <p>Choose the plan that fits your trading journey</p>
+        <div class="pricing-grid">
+            <div class="price-card">
+                <div class="plan-name">FREE</div>
+                <div class="plan-price">$0<span>/mo</span></div>
+                <div class="plan-balance">💰 $1,000 Virtual Balance</div>
+                <ul class="plan-features">
+                    <li>Live BTC Price</li>
+                    <li>Basic AI Signals</li>
+                    <li>Paper Trading ($1K)</li>
+                    <li>5 Trades per day</li>
+                    <li>Trade History (7 days)</li>
+                </ul>
+                <a href="/register?plan=free" class="plan-btn plan-btn-free">Get Started Free</a>
+            </div>
+            <div class="price-card popular">
+                <div class="popular-badge">⭐ MOST POPULAR</div>
+                <div class="plan-name">PRO</div>
+                <div class="plan-price">$29<span>/mo</span></div>
+                <div class="plan-balance">💰 $10,000 Virtual Balance</div>
+                <ul class="plan-features">
+                    <li>Everything in Free</li>
+                    <li>Advanced AI Signals (EMA+RSI)</li>
+                    <li>Paper Trading ($10K)</li>
+                    <li>Unlimited Trades</li>
+                    <li>Full Trade History</li>
+                    <li>Strategy Performance Page</li>
+                    <li>Market Analysis</li>
+                    <li>Priority Support</li>
+                </ul>
+                <a href="/register?plan=pro" class="plan-btn plan-btn-pro">🚀 Get Pro Access</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- CTA -->
+    <div class="cta">
+        <h2>Ready to Trade Smarter? 🚀</h2>
+        <p>AI-powered signals. Real market data. Zero risk paper trading.</p>
+        <a href="/register" class="btn-primary">🚀 Start Free Today</a>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="footer">
+        TradeGuard AI © 2026 — Built for Bitget Hackathon 🏆
+    </div>
+
+    <!-- SCRIPTS -->
+    <script>
+        // ─── BOT LOGIC ──────────────────────────────
+        let step = 0;
+        let userName = '';
+        let userExp = '';
+        let userNew = '';
+
+        const botFlow = [{
+            msg: "👋 Hey! Welcome to <b>TradeGuard AI</b>!<br>I'm your AI trading assistant. What's your name?",
+            input: true,
+            quickReplies: []
+        }, {
+            msg: (name) => `Nice to meet you, <b>${name}</b>! 🚀<br>How much trading experience do you have?`,
+            input: false,
+            quickReplies: ['🐣 Beginner', '📈 Intermediate', '🔥 Expert']
+        }, {
+            msg: (exp) => `Got it! <b>${exp}</b> — great!<br>Are you new to the crypto market?`,
+            input: false,
+            quickReplies: ['✅ Yes, I am new', '❌ No, I have experience']
+        }, {
+            msg: (isNew) => {
+                if (isNew.includes('Yes')) {
+                    return `No worries! 😊 TradeGuard AI is <b>perfect for beginners</b>.<br>We'll guide you step by step with AI signals!<br><br>🎯 I recommend starting with our <b>FREE plan</b> — $1,000 virtual balance to practice risk-free!`;
+                } else {
+                    return `Awesome! 💪 Since you have experience, you'll love our <b>PRO plan</b>.<br>Get advanced EMA+RSI signals, $10,000 virtual balance, and unlimited trades!`;
+                }
+            },
+            input: false,
+            quickReplies: ['🚀 Get Started', '💎 View Plans']
+        }];
+
+        function addBotMessage(html, showTyping = true) {
+            const chatBox = document.getElementById('chatBox');
+            if (showTyping) {
+                const typing = document.createElement('div');
+                typing.className = 'msg-bot typing';
+                typing.id = 'typing';
+                typing.innerHTML = `
+                        <div class="bot-avatar">🤖</div>
+                        <div class="typing-dots">
+                            <span></span><span></span><span></span>
+                        </div>`;
+                chatBox.appendChild(typing);
+                chatBox.scrollTop = chatBox.scrollHeight;
+                setTimeout(() => {
+                    typing.remove();
+                    const msg = document.createElement('div');
+                    msg.className = 'msg-bot';
+                    msg.innerHTML = `<div class="bot-avatar">🤖</div><div class="bot-bubble">${html}</div>`;
+                    chatBox.appendChild(msg);
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                }, 1000);
+            } else {
+                const msg = document.createElement('div');
+                msg.className = 'msg-bot';
+                msg.innerHTML = `<div class="bot-avatar">🤖</div><div class="bot-bubble">${html}</div>`;
+                chatBox.appendChild(msg);
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }
+        }
+
+        function addUserMessage(text) {
+            const chatBox = document.getElementById('chatBox');
+            const msg = document.createElement('div');
+            msg.className = 'msg-user';
+            msg.innerHTML = `<div class="user-bubble">${text}</div>`;
+            chatBox.appendChild(msg);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function addQuickReplies(replies, callback) {
+            const chatBox = document.getElementById('chatBox');
+            setTimeout(() => {
+                const div = document.createElement('div');
+                div.className = 'quick-replies';
+                div.id = 'quickReplies';
+                replies.forEach(r => {
+                    const btn = document.createElement('button');
+                    btn.className = 'qr-btn';
+                    btn.textContent = r;
+                    btn.onclick = () => {
+                        div.remove();
+                        callback(r);
+                    };
+                    div.appendChild(btn);
+                });
+                chatBox.appendChild(div);
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }, 1200);
+        }
+
+        function handleStep(userInput) {
+            addUserMessage(userInput);
+            if (step === 0) {
+                userName = userInput;
+                const nextMsg = botFlow[1].msg(userName);
+                step = 1;
+                setTimeout(() => {
+                    addBotMessage(nextMsg);
+                    addQuickReplies(botFlow[1].quickReplies, handleStep);
+                }, 500);
+            } else if (step === 1) {
+                userExp = userInput;
+                const nextMsg = botFlow[2].msg(userExp);
+                step = 2;
+                setTimeout(() => {
+                    addBotMessage(nextMsg);
+                    addQuickReplies(botFlow[2].quickReplies, handleStep);
+                }, 500);
+            } else if (step === 2) {
+                userNew = userInput;
+                const nextMsg = botFlow[3].msg(userNew);
+                step = 3;
+                setTimeout(() => {
+                    addBotMessage(nextMsg);
+                    addQuickReplies(['🚀 Get Started Free', '💎 See All Plans'], (choice) => {
+                        addUserMessage(choice);
+                        if (choice.includes('Plans')) {
+                            document.querySelector('.pricing').scrollIntoView({ behavior: 'smooth' });
+                        } else {
+                            window.location.href = '/register';
+                        }
+                    });
+                }, 500);
+            } else if (step === 3) {
+                addBotMessage("🎉 Great choice! Let's get you started!<br>Redirecting to registration...");
+                setTimeout(() => { window.location.href = '/register'; }, 1500);
+            }
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('userInput');
+            const text = input.value.trim();
+            if (!text) return;
+            input.value = '';
+            if (step === 0) {
+                handleStep(text);
+            } else if (step === 3) {
+                handleStep(text);
+            } else {
+                addUserMessage(text);
+                addBotMessage("Please select one of the options above 👆");
+            }
+        }
+
+        window.onload = () => {
+            setTimeout(() => {
+                addBotMessage(botFlow[0].msg, false);
+            }, 500);
+            fetch('/api/btc-price')
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById('btc-price').textContent =
+                        '$' + parseFloat(data.price).toLocaleString();
+                })
+                .catch(() => {
+                    document.getElementById('btc-price').textContent = 'Live';
+                });
+        };
+    </script>
+
+</body>
+</html>

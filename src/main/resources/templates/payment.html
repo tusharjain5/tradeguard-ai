@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>TradeGuard AI - Upgrade to PRO</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; font-family:Arial,sans-serif; }
+        body {
+            background: linear-gradient(135deg, #070b14, #0d1320, #111827);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .payment-card {
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 30px;
+            padding: 50px;
+            max-width: 450px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 0 40px rgba(0,255,204,0.1);
+        }
+        .icon { font-size: 60px; margin-bottom: 10px; }
+        h1 { color: #00ffcc; margin-bottom: 10px; }
+        .subtitle { color: #9ca3af; margin-bottom: 30px; }
+        .plan-details {
+            background: rgba(0,255,204,0.05);
+            border: 1px solid rgba(0,255,204,0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .plan-details h3 { color: #00ffcc; font-size: 24px; }
+        .plan-details p { color: #9ca3af; font-size: 14px; }
+        .price { font-size: 48px; font-weight: bold; color: white; }
+        .price span { font-size: 20px; color: #9ca3af; }
+        .features { text-align: left; margin: 20px 0; }
+        .features li {
+            color: #9ca3af;
+            padding: 8px 0;
+            list-style: none;
+        }
+        .features li::before { content: "✅ "; color: #00ff88; }
+        .btn-pay {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #00ffcc, #00bfff);
+            color: #070b14;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .btn-pay:hover { transform: scale(1.02); box-shadow: 0 0 30px rgba(0,255,204,0.3); }
+        .btn-pay:disabled { opacity: 0.5; cursor: not-allowed; }
+        .error-msg { color: #ff4d4d; margin-top: 10px; }
+        .loading { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="payment-card">
+    <div class="icon">💎</div>
+    <h1>Upgrade to PRO</h1>
+    <p class="subtitle">Complete payment to activate PRO features!</p>
+
+    <div class="plan-details">
+        <h3>PRO Plan</h3>
+        <p>$29 / month</p>
+    </div>
+
+    <div class="price">₹499 <span>/ month</span></div>
+
+    <ul class="features">
+        <li>Unlimited Trades</li>
+        <li>$10,000 Virtual Balance</li>
+        <li>Advanced AI Signals</li>
+        <li>Full Trade History</li>
+        <li>Priority Support</li>
+    </ul>
+
+    <input type="hidden" id="userEmail" th:value="${email}" />
+
+    <div id="errorMsg" class="error-msg"></div>
+    <div id="loading" class="loading">⏳ Processing...</div>
+
+    <button class="btn-pay" onclick="payNow()">
+        🚀 Pay ₹499 & Activate PRO
+    </button>
+</div>
+
+<script>
+    const razorpayKeyId = /*[[${razorpayKeyId}]]*/ '';
+
+    function payNow() {
+        const email = document.getElementById('userEmail').value;
+        const btn = document.querySelector('.btn-pay');
+        const loading = document.getElementById('loading');
+        const errorMsg = document.getElementById('errorMsg');
+
+        btn.disabled = true;
+        loading.style.display = 'block';
+        errorMsg.textContent = '';
+
+        fetch('/payment/create-order', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ amount: 499 })
+        })
+        .then(res => res.json())
+        .then(data => {
+            loading.style.display = 'none';
+            btn.disabled = false;
+
+            if (data.error) {
+                errorMsg.textContent = '❌ ' + data.error;
+                return;
+            }
+
+            var options = {
+                "key": data.keyId,
+                "amount": data.amount,
+                "currency": "INR",
+                "name": "TradeGuard AI",
+                "description": "PRO Plan Subscription",
+                "order_id": data.orderId,
+                "prefill": {
+                    "email": email
+                },
+                "handler": function (response) {
+                    fetch('/payment/verify', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            paymentId: response.razorpay_payment_id,
+                            orderId: response.razorpay_order_id,
+                            signature: response.razorpay_signature,
+                            email: email
+                        })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            alert('✅ Payment Successful!\nYou are now a PRO member!');
+                            window.location.href = '/dashboard';
+                        } else {
+                            alert('❌ Payment verification failed!\n' + data.message);
+                        }
+                    });
+                },
+                "modal": {
+                    "ondismiss": function() {
+                        btn.disabled = false;
+                        loading.style.display = 'none';
+                    }
+                }
+            };
+            var rzp = new Razorpay(options);
+            rzp.open();
+        })
+        .catch(err => {
+            loading.style.display = 'none';
+            btn.disabled = false;
+            errorMsg.textContent = '❌ ' + err.message;
+        });
+    }
+</script>
+
+</body>
+</html>

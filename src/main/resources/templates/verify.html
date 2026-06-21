@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>TradeGuard AI - Verify Email</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; font-family:Arial,sans-serif; }
+        body {
+            background: linear-gradient(135deg, #070b14, #0d1320, #111827);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .verify-container {
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 30px;
+            padding: 50px;
+            max-width: 450px;
+            width: 100%;
+            box-shadow: 0 0 40px rgba(0,255,204,0.1);
+            text-align: center;
+        }
+        .icon { font-size: 60px; margin-bottom: 10px; }
+        h1 { color: #00ffcc; margin-bottom: 10px; }
+        .subtitle { color: #9ca3af; margin-bottom: 30px; }
+        .form-group { margin-bottom: 20px; }
+        input[type="text"] {
+            width: 100%;
+            padding: 14px 18px;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            color: white;
+            font-size: 20px;
+            text-align: center;
+            letter-spacing: 8px;
+            transition: 0.3s;
+        }
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #00ffcc;
+            box-shadow: 0 0 20px rgba(0,255,204,0.1);
+        }
+        .btn-verify {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #00ffcc, #00bfff);
+            color: #070b14;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .btn-verify:hover { transform: scale(1.02); box-shadow: 0 0 30px rgba(0,255,204,0.3); }
+        .error { color: #ff4d4d; margin-bottom: 15px; }
+        .message { color: #00ff88; margin-bottom: 15px; }
+        .resend { margin-top: 20px; color: #6b7280; font-size: 14px; }
+        .resend a { color: #00ffcc; text-decoration: none; }
+        .resend a:hover { text-decoration: underline; }
+        .login-link { margin-top: 20px; }
+        .login-link a { color: #00ffcc; text-decoration: none; }
+        .email-display {
+            background: rgba(0,255,204,0.05);
+            border: 1px solid rgba(0,255,204,0.1);
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 20px;
+            color: #00ffcc;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="verify-container">
+        <div class="icon">📧</div>
+        <h1>Verify Your Email</h1>
+        
+        <!-- ⭐ EMAIL DISPLAY -->
+        <div class="email-display" th:text="'📧 ' + ${email}">📧 your_email@gmail.com</div>
+        
+        <div th:if="${error}" class="error" th:text="${error}"></div>
+        <div th:if="${message}" class="message" th:text="${message}"></div>
+        
+        <!-- ⭐ CRITICAL FIX: email ko directly pass karo -->
+        <form th:action="@{/verify}" method="post">
+            <!-- ⭐ HIDDEN EMAIL FIELD - MUST HAVE VALUE -->
+            <input type="hidden" name="email" th:value="${email}" />
+            
+            <div class="form-group">
+                <input type="text" name="code" placeholder="123456" maxlength="6" required>
+            </div>
+            
+            <button type="submit" class="btn-verify">✅ Verify Email</button>
+        </form>
+        
+        <div class="resend">
+            Didn't receive the code? <a th:href="'/resend-code?email=' + ${email}">Resend</a>
+        </div>
+        
+        <div class="login-link">
+            Already verified? <a href="/login">Login</a>
+        </div>
+    </div>
+</body>
+</html>

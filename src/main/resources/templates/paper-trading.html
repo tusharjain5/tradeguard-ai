@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>TradeGuard AI - Paper Trading</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; font-family:Arial,sans-serif; }
+        body {
+            background: linear-gradient(135deg, #070b14, #0d1320, #111827);
+            color: white;
+            padding: 25px;
+            min-height: 100vh;
+        }
+        .page-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #00ffcc;
+            margin: 20px 0 30px;
+        }
+        .page-title small {
+            font-size: 16px;
+            color: #9ca3af;
+            font-weight: normal;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+        .card {
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 0 20px rgba(0,255,255,0.08);
+            transition: 0.3s;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0 30px rgba(0,255,255,0.20);
+        }
+        h2 { color: #9ca3af; margin-bottom: 15px; font-size: 16px; text-transform: uppercase; letter-spacing: 1px; }
+        .big-text { font-size: 32px; font-weight: bold; }
+        .green { color: #00ff88; }
+        .red   { color: #ff4d4d; }
+        .cyan  { color: #00ffcc; }
+        .gold  { color: #ffae42; }
+        .buy  { color: #00ff88; text-shadow: 0 0 15px rgba(0,255,136,0.6); }
+        .sell { color: #ff4d4d; text-shadow: 0 0 15px rgba(255,77,77,0.6); }
+        .hold { color: #ffae42; text-shadow: 0 0 15px rgba(255,174,66,0.6); }
+        .plan-badge {
+            display: inline-block;
+            padding: 4px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .plan-free { background: rgba(0,255,136,0.15); border: 1px solid #00ff88; color: #00ff88; }
+        .plan-pro  { background: rgba(255,174,66,0.15); border: 1px solid #ffae42; color: #ffae42; }
+        .trade-panel {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(0,255,204,0.2);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 25px;
+        }
+        .trade-panel h2 {
+            font-size: 20px;
+            color: #00ffcc;
+            margin-bottom: 25px;
+            text-transform: none;
+            letter-spacing: 0;
+        }
+        .trade-input-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .trade-input-group input {
+            flex: 1;
+            min-width: 150px;
+            padding: 10px;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+        }
+        .trade-input-group input:focus {
+            outline: none;
+            border-color: #00ffcc;
+        }
+        .trade-input-group button {
+            flex: 1;
+            min-width: 100px;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .trade-input-group button:hover { transform: scale(1.02); }
+        .trade-input-group button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .buy-section {
+            background: rgba(0,255,136,0.05);
+            border: 1px solid rgba(0,255,136,0.2);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .buy-section h3 { color: #00ff88; font-size: 16px; margin-bottom: 10px; }
+        .sell-section {
+            background: rgba(255,77,77,0.05);
+            border: 1px solid rgba(255,77,77,0.2);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .sell-section h3 { color: #ff4d4d; font-size: 16px; margin-bottom: 10px; }
+        .trade-hint {
+            color: #6b7280;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+        .trade-hint span { color: #00ffcc; }
+        .btn-buy  { background: linear-gradient(135deg, #00ff88, #00cc66); color: #070b14; }
+        .btn-buy:hover { box-shadow: 0 0 25px rgba(0,255,136,0.4); }
+        .btn-sell { background: linear-gradient(135deg, #ff4d4d, #cc0000); color: white; }
+        .btn-sell:hover { box-shadow: 0 0 25px rgba(255,77,77,0.4); }
+        .badge-sm {
+            display: inline-block;
+            padding: 3px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .badge-sm-buy  { background: rgba(0,255,136,0.15); color: #00ff88; }
+        .badge-sm-sell { background: rgba(255,77,77,0.15);  color: #ff4d4d; }
+        .badge-sm-hold { background: rgba(255,174,66,0.15); color: #ffae42; }
+        .badge-sm-open  { background: rgba(0,255,204,0.15); color: #00ffcc; }
+        .badge-sm-closed { background: rgba(107,114,128,0.15); color: #6b7280; }
+        .signal-badge {
+            display: inline-block;
+            padding: 10px 25px;
+            border-radius: 25px;
+            font-size: 20px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        .badge-buy  { background: rgba(0,255,136,0.15); border: 1px solid #00ff88; color: #00ff88; }
+        .badge-sell { background: rgba(255,77,77,0.15);  border: 1px solid #ff4d4d;  color: #ff4d4d; }
+        .badge-hold { background: rgba(255,174,66,0.15); border: 1px solid #ffae42; color: #ffae42; }
+        .alert {
+            padding: 12px 20px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+        .alert-warning {
+            background: rgba(255,174,66,0.1);
+            border: 1px solid rgba(255,174,66,0.3);
+            color: #ffae42;
+        }
+        .alert-success {
+            background: rgba(0,255,136,0.1);
+            border: 1px solid rgba(0,255,136,0.3);
+            color: #00ff88;
+        }
+        .alert-danger {
+            background: rgba(255,77,77,0.1);
+            border: 1px solid rgba(255,77,77,0.3);
+            color: #ff4d4d;
+        }
+        .disclaimer {
+            background: rgba(255,174,66,0.05);
+            border: 1px solid rgba(255,174,66,0.2);
+            border-radius: 12px;
+            padding: 15px 20px;
+            color: #9ca3af;
+            font-size: 13px;
+            margin-top: 25px;
+        }
+        .footer { text-align: center; margin-top: 40px; color: #6b7280; }
+        .table-wrap { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        table th {
+            background: rgba(0,0,0,0.3);
+            padding: 12px 15px;
+            text-align: left;
+            color: #6b7280;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+        table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            font-size: 14px;
+        }
+        table tr:hover td { background: rgba(255,255,255,0.03); }
+        .chart-container {
+            width: 100%;
+            height: 400px;
+            background: rgba(255,255,255,0.02);
+            border-radius: 15px;
+            border: 1px solid rgba(255,255,255,0.06);
+            overflow: hidden;
+        }
+        .status-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+        .dot-green { background: #00ff88; }
+        .dot-red { background: #ff4d4d; }
+        .dot-gold { background: #ffae42; }
+        .dot-gray { background: #6b7280; }
+    </style>
+</head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+<br>
+
+<div class="page-title">
+    💹 Paper Trading
+    <small>
+        <span th:if="${userRole == 'FREE'}" class="plan-badge plan-free">📊 FREE Plan</span>
+        <span th:if="${userRole == 'PRO'}" class="plan-badge plan-pro">💎 PRO Plan</span>
+    </small>
+</div>
+
+<!-- STATS GRID - Updated with Total PnL -->
+<div class="grid">
+    <div class="card">
+        <h2>💰 Virtual Balance</h2>
+        <div class="big-text cyan" th:text="${balance}">$10,000.00</div>
+        <small style="color:#6b7280;font-size:12px;" th:text="${userRole == 'FREE' ? '📊 FREE Plan' : '💎 PRO Plan'}"></small>
+    </div>
+    <div class="card">
+        <h2>📈 BTC Price</h2>
+        <div class="big-text" th:text="${btcPrice}">$0.00</div>
+        <small style="color:#6b7280;font-size:12px;">● Live</small>
+    </div>
+    <div class="card">
+        <h2>🪙 BTC Holdings</h2>
+        <div class="big-text gold" th:text="${totalBTC} + ' BTC'">0.000000 BTC</div>
+        <small style="color:#6b7280;font-size:12px;">Total BTC in portfolio</small>
+    </div>
+    <div class="card">
+        <h2>📊 Total PnL</h2>
+        <div class="big-text" th:class="${totalPnl != null and totalPnl.contains('-') ? 'red' : 'green'}" th:text="${totalPnl != null ? totalPnl : '$0.00'}">$0.00</div>
+        <small style="color:#6b7280;font-size:12px;">Overall Profit/Loss</small>
+    </div>
+</div>
+
+<!-- LIVE CHART -->
+<div class="trade-panel">
+    <h2>📊 Live BTC Chart</h2>
+    <div class="chart-container">
+        <div id="tradingview_btc"></div>
+        <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+        <script type="text/javascript">
+            new TradingView.widget({
+                "width": "100%",
+                "height": 400,
+                "symbol": "BITGET:BTCUSDT",
+                "interval": "5",
+                "timezone": "Asia/Kolkata",
+                "theme": "dark",
+                "style": "1",
+                "locale": "en",
+                "toolbar_bg": "#111827",
+                "enable_publishing": false,
+                "container_id": "tradingview_btc"
+            });
+        </script>
+    </div>
+</div>
+
+<!-- ALERTS -->
+<div th:if="${userRole == 'FREE' and openTrades != null and openTrades.size() >= 3}" class="alert alert-warning">
+    ⚠️ <strong>FREE Limit Reached!</strong> Max 3 open trades. <a href="/register?plan=pro" style="color:#00ffcc;">Upgrade to PRO</a>
+</div>
+<div th:if="${userRole == 'FREE' and openTrades != null and openTrades.size() < 3}" class="alert alert-success">
+    ✅ <strong>FREE Plan:</strong> <span th:text="${3 - openTrades.size()}"></span> trades remaining. <a href="/register?plan=pro" style="color:#00ffcc;">Upgrade to PRO</a>
+</div>
+<div th:if="${userRole == 'PRO'}" class="alert alert-success">
+    💎 <strong>PRO Plan:</strong> Unlimited trades! Balance: <span th:text="${balance}"></span>
+</div>
+
+<!-- ACTIVE POSITIONS - ⭐ NO ACTION BUTTON -->
+<div class="trade-panel">
+    <h2>📊 Active Positions (<span th:text="${openTrades != null ? openTrades.size() : 0}"></span>)</h2>
+    
+    <div th:if="${openTrades == null or openTrades.isEmpty()}">
+        <p style="color:#6b7280;text-align:center;padding:30px;">📭 No active positions. Buy BTC below! 🚀</p>
+    </div>
+    
+    <div th:if="${openTrades != null and !openTrades.isEmpty()}">
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Signal</th>
+                        <th>Entry Price</th>
+                        <th>Qty</th>
+                        <th>Current PnL</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="trade : ${openTrades}">
+                        <td style="color:#9ca3af;font-size:13px;" th:text="${#temporals.format(trade.createdAt, 'HH:mm:ss')}"></td>
+                        <td>
+                            <span th:if="${trade.signal == 'BUY'}" class="badge-sm badge-sm-buy">🟢 BUY</span>
+                        </td>
+                        <td class="cyan" th:text="'$' + ${#numbers.formatDecimal(trade.entryPrice, 0, 2)}"></td>
+                        <td th:text="${#numbers.formatDecimal(trade.quantity, 0, 6)} + ' BTC'"></td>
+                        <td th:class="${trade.pnl != null and trade.pnl < 0 ? 'red' : 'green'}" 
+                            th:text="'$' + ${#numbers.formatDecimal(trade.pnl, 0, 2)}">$0.00</td>
+                        <td>
+                            <span class="badge-sm badge-sm-open"><span class="status-dot dot-green"></span> Open</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- EXECUTE TRADE -->
+<div class="trade-panel">
+    <h2>⚡ Execute Trade</h2>
+    
+    <div style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:20px;">
+        <div style="flex:1;min-width:200px;">
+            <p style="color:#9ca3af;font-size:14px;margin-bottom:5px;">
+                🤖 AI Recommendation: 
+                <span th:if="${signal == 'BUY'}" style="color:#00ff88;font-weight:bold;font-size:18px;">🟢 BUY 📈</span>
+                <span th:if="${signal == 'SELL'}" style="color:#ff4d4d;font-weight:bold;font-size:18px;">🔴 SELL 📉</span>
+                <span th:if="${signal == 'HOLD'}" style="color:#ffae42;font-weight:bold;font-size:18px;">🟡 HOLD ⏳</span>
+            </p>
+            <p style="color:#6b7280;font-size:13px;">
+                Current Price: <span class="cyan" th:text="${btcPrice}"></span>
+            </p>
+        </div>
+        <div style="flex:1;min-width:200px;">
+            <p style="color:#9ca3af;font-size:14px;margin-bottom:5px;">📊 Account Info:</p>
+            <div style="color:#6b7280;font-size:13px;line-height:1.8;">
+                Balance: <span class="cyan" th:text="${balance}"></span><br>
+                Plan: <span th:text="${userRole}"></span><br>
+                BTC: <span class="gold" th:text="${totalBTC}"></span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- BUY Section -->
+    <div class="buy-section">
+        <h3>🟢 BUY BTC</h3>
+        <div class="trade-input-group">
+            <input type="number" id="buyQuantity" step="0.001" min="0.001" value="0.01" 
+                   placeholder="Enter BTC quantity">
+            <button class="btn-buy" onclick="buyTrade()" 
+                    th:disabled="${userRole == 'FREE' and openTrades != null and openTrades.size() >= 3}">
+                🟢 BUY
+            </button>
+        </div>
+        <div class="trade-hint">
+            Approx Cost: <span id="buyCost">$0.00</span>
+        </div>
+    </div>
+    
+    <!-- SELL Section -->
+    <div class="sell-section">
+        <h3>🔴 SELL BTC</h3>
+        <div class="trade-input-group">
+            <input type="number" id="sellQuantity" step="0.001" min="0.001" value="0.01" 
+                   placeholder="Enter BTC quantity">
+            <button class="btn-sell" onclick="sellTrade()">
+                🔴 SELL
+            </button>
+        </div>
+        <div class="trade-hint">
+            Approx Earnings: <span id="sellEarnings">$0.00</span>
+        </div>
+    </div>
+    
+    <div th:if="${userRole == 'FREE' and openTrades != null and openTrades.size() >= 3}" 
+         style="color:#ffae42;font-size:13px;margin-top:10px;">
+        ⚠️ FREE limit reached (3 open positions). <a href="/register?plan=pro" style="color:#00ffcc;">Upgrade to PRO</a>
+    </div>
+</div>
+
+<!-- TRADE HISTORY -->
+<div class="trade-panel">
+    <h2>📋 Trade History (<span th:text="${tradeHistory != null ? tradeHistory.size() : 0}"></span>)</h2>
+    
+    <div th:if="${tradeHistory == null or tradeHistory.isEmpty()}">
+        <p style="color:#6b7280;text-align:center;padding:30px;">📭 No trade history yet. Start trading! 📈</p>
+    </div>
+    
+    <div th:if="${tradeHistory != null and !tradeHistory.isEmpty()}">
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Type</th>
+                        <th>Price</th>
+                        <th>Qty</th>
+                        <th>Total</th>
+                        <th>PnL</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="trade : ${tradeHistory}">
+                        <td style="color:#9ca3af;font-size:13px;" th:text="${#temporals.format(trade.createdAt, 'HH:mm:ss')}"></td>
+                        <td>
+                            <span th:if="${trade.signal == 'BUY'}" class="badge-sm badge-sm-buy">🟢 BUY</span>
+                            <span th:if="${trade.signal == 'SELL'}" class="badge-sm badge-sm-sell">🔴 SELL</span>
+                            <span th:if="${trade.signal == 'HOLD'}" class="badge-sm badge-sm-hold">🟡 HOLD</span>
+                        </td>
+                        <td class="cyan" th:text="'$' + ${#numbers.formatDecimal(trade.entryPrice, 0, 2)}"></td>
+                        <td th:text="${#numbers.formatDecimal(trade.quantity, 0, 6)} + ' BTC'"></td>
+                        <td class="cyan" th:text="'$' + ${#numbers.formatDecimal(trade.entryPrice * trade.quantity, 0, 2)}"></td>
+                        <td th:class="${trade.pnl != null and trade.pnl < 0 ? 'red' : 'green'}" th:text="'$' + ${#numbers.formatDecimal(trade.pnl, 0, 2)}"></td>
+                        <td>
+                            <span th:if="${trade.status == 'OPEN'}" class="badge-sm badge-sm-open"><span class="status-dot dot-green"></span> Open</span>
+                            <span th:if="${trade.status == 'CLOSED'}" class="badge-sm badge-sm-closed">✓ Closed</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- DISCLAIMER -->
+<div class="disclaimer">
+    ⚠️ <strong>Paper Trading Mode</strong> — Virtual trades only. No real money involved.
+    <span th:if="${userRole == 'FREE'}">Balance: $1,000 | Max 3 open positions</span>
+    <span th:if="${userRole == 'PRO'}">Balance: $10,000 | Unlimited trades</span>
+</div>
+
+<div class="footer">TradeGuard AI © 2026 — Built for Bitget Hackathon 🏆</div>
+
+<script>
+    let btcPrice = 0;
+    
+    function fetchBTCPrice() {
+        fetch('/api/paper-trade/price')
+            .then(res => res.json())
+            .then(data => {
+                btcPrice = parseFloat(data.price);
+                console.log('✅ BTC Price fetched: $' + btcPrice);
+                updateCalculations();
+            })
+            .catch(err => {
+                console.error('❌ Error fetching BTC price:', err);
+                const priceText = document.querySelector('.card .big-text')?.textContent || '$0.00';
+                btcPrice = parseFloat(priceText.replace('$', '').replace(',', '')) || 0;
+                updateCalculations();
+            });
+    }
+    
+    function updateCalculations() {
+        const buyQty = parseFloat(document.getElementById('buyQuantity').value) || 0;
+        const buyCost = buyQty * btcPrice;
+        document.getElementById('buyCost').textContent = '$' + buyCost.toFixed(2);
+        
+        const sellQty = parseFloat(document.getElementById('sellQuantity').value) || 0;
+        const sellEarnings = sellQty * btcPrice;
+        document.getElementById('sellEarnings').textContent = '$' + sellEarnings.toFixed(2);
+    }
+
+    // ⭐ BUY Function
+    function buyTrade() {
+        const quantity = document.getElementById('buyQuantity').value;
+        if (!quantity || quantity <= 0) {
+            alert('Please enter a valid quantity!');
+            return;
+        }
+        
+        const cost = parseFloat(quantity) * btcPrice;
+        if (!confirm('📊 Buy ' + quantity + ' BTC at $' + btcPrice.toFixed(2) + '?\nTotal Cost: $' + cost.toFixed(2))) {
+            return;
+        }
+        
+        const btn = document.querySelector('.buy-section .btn-buy');
+        btn.disabled = true;
+        btn.textContent = '⏳ Processing...';
+        
+        fetch('/api/paper-trade/buy', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ quantity: quantity })
+        })
+        .then(res => res.json())
+        .then(data => {
+            btn.disabled = false;
+            btn.textContent = '🟢 BUY';
+            if (data.success === false) {
+                alert('❌ Error: ' + (data.error || 'Unknown error'));
+                return;
+            }
+            alert('✅ BUY Executed!\nQuantity: ' + quantity + ' BTC\nEntry Price: ' + data.entryPrice);
+            location.reload();
+        })
+        .catch(err => {
+            btn.disabled = false;
+            btn.textContent = '🟢 BUY';
+            alert('❌ Error executing trade!');
+            console.error(err);
+        });
+    }
+
+    // ⭐ SELL Function
+    function sellTrade() {
+        const quantity = document.getElementById('sellQuantity').value;
+        if (!quantity || quantity <= 0) {
+            alert('Please enter a valid quantity!');
+            return;
+        }
+        
+        const earnings = parseFloat(quantity) * btcPrice;
+        if (!confirm('📊 Sell ' + quantity + ' BTC at $' + btcPrice.toFixed(2) + '?\nTotal Earnings: $' + earnings.toFixed(2))) {
+            return;
+        }
+        
+        const btn = document.querySelector('.sell-section .btn-sell');
+        btn.disabled = true;
+        btn.textContent = '⏳ Processing...';
+        
+        fetch('/api/paper-trade/sell', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ quantity: quantity })
+        })
+        .then(res => res.json())
+        .then(data => {
+            btn.disabled = false;
+            btn.textContent = '🔴 SELL';
+            if (data.success === false) {
+                alert('❌ Error: ' + (data.error || 'Unknown error'));
+                return;
+            }
+            alert('✅ SELL Executed!\nQuantity: ' + quantity + ' BTC\nPrice: ' + data.entryPrice);
+            location.reload();
+        })
+        .catch(err => {
+            btn.disabled = false;
+            btn.textContent = '🔴 SELL';
+            alert('❌ Error selling trade!');
+            console.error(err);
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        fetchBTCPrice();
+        document.getElementById('buyQuantity').addEventListener('input', updateCalculations);
+        document.getElementById('sellQuantity').addEventListener('input', updateCalculations);
+        setInterval(fetchBTCPrice, 10000);
+    });
+
+    setTimeout(function(){ location.reload(); }, 30000);
+</script>
+
+</body>
+</html>
