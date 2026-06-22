@@ -79,21 +79,7 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    // ⭐⭐⭐ UPGRADE TO PRO - YE METHOD ADD KARO ⭐⭐⭐
-//    public User upgradeToPro(String email) {
-//        User user = userRepository.findByEmail(email)
-//            .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
-//        
-//        user.upgradeToPro();  // User class ka method call kar raha hai
-//        user.setUpdatedAt(LocalDateTime.now());
-//        
-//        System.out.println("✅ User upgraded to PRO: " + email);
-//        System.out.println("💰 New Balance: $" + user.getVirtualBalance());
-//        System.out.println("💳 Payment Done: " + user.isPaymentDone());
-//        
-//        return userRepository.save(user);
-//    }
- // ⭐ UPGRADE TO PRO
+
     public User upgradeToPro(String email) {
         User user = userRepository.findByEmail(email)
             .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
