@@ -24,6 +24,7 @@ public class TradeHistoryController {
         this.userService = userService;
     }
 
+
     @GetMapping("/trade-history")
     public String tradeHistory(Model model) {
         try {
@@ -46,10 +47,15 @@ public class TradeHistoryController {
                 return "redirect:/login";
             }
 
+            // ⭐ FREE USER CHECK - Redirect to dashboard
+            if (user.getRole().equals("FREE")) {
+                System.out.println("❌ FREE user attempted to access Trade History page!");
+                return "redirect:/dashboard";
+            }
+
             List<Trade> tradeHistory = paperTradingService.getTradeHistory();
             System.out.println("📊 Total trades found: " + (tradeHistory != null ? tradeHistory.size() : 0));
             
-            // Calculate stats
             int totalTrades = tradeHistory != null ? tradeHistory.size() : 0;
             int winningTrades = 0;
             double totalPnl = 0.0;

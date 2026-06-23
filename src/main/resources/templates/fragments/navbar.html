@@ -1,11 +1,9 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
-	  <head>
-
-	      <link rel="shortcut icon" th:href="@{/img/tradeguard.png}" type="image/x-icon">
-	  </head> 
-	  
+<head>
+    <link rel="shortcut icon" th:href="@{/img/tradeguard.png}" type="image/x-icon">
+</head>
 <body>
 <nav th:fragment="navbar" 
      style="display:flex;justify-content:space-between;align-items:center;padding:14px 30px;background:rgba(255,255,255,0.02);border-bottom:1px solid rgba(255,255,255,0.06);position:sticky;top:0;z-index:999;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);flex-wrap:wrap;gap:10px;">
@@ -24,9 +22,19 @@
         <!-- Authenticated -->
         <div sec:authorize="isAuthenticated()" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
             <a href="/dashboard" style="color:#9ca3af;text-decoration:none;padding:6px 14px;border-radius:30px;font-size:clamp(12px,1vw,14px);transition:0.3s;">Dashboard</a>
-            <a href="/strategy" style="color:#9ca3af;text-decoration:none;padding:6px 14px;border-radius:30px;font-size:clamp(12px,1vw,14px);transition:0.3s;">Strategy</a>
+            
+            <!-- ⭐ Strategy - ONLY PRO USERS -->
+            <div th:if="${userRole == 'PRO'}">
+                <a href="/strategy" style="color:#9ca3af;text-decoration:none;padding:6px 14px;border-radius:30px;font-size:clamp(12px,1vw,14px);transition:0.3s;">Strategy</a>
+            </div>
+            
             <a href="/paper-trading" style="color:#9ca3af;text-decoration:none;padding:6px 14px;border-radius:30px;font-size:clamp(12px,1vw,14px);transition:0.3s;">Paper Trading</a>
-            <a href="/trade-history" style="color:#9ca3af;text-decoration:none;padding:6px 14px;border-radius:30px;font-size:clamp(12px,1vw,14px);transition:0.3s;">History</a>
+            
+            <!-- ⭐ Trade History - ONLY PRO USERS -->
+            <div th:if="${userRole == 'PRO'}">
+                <a href="/trade-history" style="color:#9ca3af;text-decoration:none;padding:6px 14px;border-radius:30px;font-size:clamp(12px,1vw,14px);transition:0.3s;">History</a>
+            </div>
+            
             <a href="/profile" style="color:#9ca3af;text-decoration:none;padding:6px 14px;border-radius:30px;font-size:clamp(12px,1vw,14px);transition:0.3s;">👤 Profile</a>
 
             <!-- Upgrade / PRO Badge -->
@@ -60,17 +68,10 @@
 
 <!-- Responsive CSS (Inline) -->
 <style>
-    /* Tablets */
     @media (max-width: 992px) {
-        nav {
-            padding: 12px 20px !important;
-        }
-        nav>div:last-child {
-            gap: 4px !important;
-        }
+        nav { padding: 12px 20px !important; }
+        nav>div:last-child { gap: 4px !important; }
     }
-
-    /* Mobile */
     @media (max-width: 768px) {
         nav {
             flex-direction: column !important;
@@ -78,34 +79,14 @@
             padding: 12px 16px !important;
             gap: 8px !important;
         }
-        nav>div:first-child {
-            justify-content: center !important;
-        }
-        nav>div:last-child {
-            justify-content: center !important;
-            gap: 4px !important;
-            flex-wrap: wrap !important;
-        }
-        nav a,
-        nav span {
-            font-size: 11px !important;
-            padding: 4px 10px !important;
-        }
+        nav>div:first-child { justify-content: center !important; }
+        nav>div:last-child { justify-content: center !important; gap: 4px !important; flex-wrap: wrap !important; }
+        nav a, nav span { font-size: 11px !important; padding: 4px 10px !important; }
     }
-
-    /* Small Mobile */
     @media (max-width: 480px) {
-        nav {
-            padding: 10px 12px !important;
-        }
-        nav a,
-        nav span {
-            font-size: 10px !important;
-            padding: 3px 8px !important;
-        }
-        nav>div:first-child a {
-            font-size: 16px !important;
-        }
+        nav { padding: 10px 12px !important; }
+        nav a, nav span { font-size: 10px !important; padding: 3px 8px !important; }
+        nav>div:first-child a { font-size: 16px !important; }
     }
 </style>
 </body>

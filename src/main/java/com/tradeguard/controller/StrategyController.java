@@ -35,6 +35,12 @@ public class StrategyController {
 	            String email = authentication.getName();
 	            User user = userService.getUserByEmail(email).orElse(null);
 
+	            // ⭐ FREE USER CHECK - Redirect to dashboard
+	            if (user == null || user.getRole().equals("FREE")) {
+	                System.out.println("❌ FREE user attempted to access Strategy page!");
+	                return "redirect:/dashboard";
+	            }
+
 	            String btcPrice = marketDataService.getBTCPrice();
 	            double price = Double.parseDouble(btcPrice);
 	            TradingDecision decision = strategyService.analyzeMarket(price);
